@@ -12,6 +12,14 @@ test('one edit or adjacent transposition is a typo', () => {
   for (const answer of ['gegesen', 'gegesssen', 'gegessan', 'gegesesn']) assert.equal(grade(answer, 'gegessen'), 'typo', answer);
   for (const answer of ['', 'gegangen', 'essen', 'habe gegessen', 'ge gessen!']) assert.equal(grade(answer, 'gegessen'), 'wrong', answer);
 });
+test('accepts German keyboard alternatives without conflating ordinary vowel pairs', () => {
+  for (const [answer, expected] of [['gehoert', 'gehört'], ['GEWAeHLT', 'gewählt'], ['geuebt', 'geübt'], [' geaendert ', 'geändert']]) {
+    assert.equal(grade(answer, expected), 'correct');
+  }
+  assert.equal(grade('gehort', 'gehört'), 'typo');
+  assert.notEqual(grade('gedaürt', 'gedauert'), 'correct');
+  assert.equal(grade('gedauert', 'gedauert'), 'correct');
+});
 test('vocabulary has unique stable IDs, consistent types and valid forms', () => {
   assert.equal(verbs.length, 50);
   assert.equal(new Set(verbs.map(v => v.id)).size, verbs.length);

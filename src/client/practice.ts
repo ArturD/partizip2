@@ -1,4 +1,5 @@
 import { api, element, labels } from './api.js';
+import { answersMatch } from './answers.js';
 interface Verb { id: string; infinitive: string; english: string; tier: string; type: string; subtype: string; separable: boolean }
 const answer = element<HTMLInputElement>('answer'), check = element<HTMLButtonElement>('check'), next = element<HTMLButtonElement>('next');
 const tier = element<HTMLSelectElement>('tier'), type = element<HTMLSelectElement>('type'), feedback = element('feedback');
@@ -26,8 +27,7 @@ element<HTMLFormElement>('answer-form').addEventListener('submit', async event =
   event.preventDefault(); if (!current || check.disabled) return;
   if (!answer.value.trim()) { answer.setCustomValidity('Enter the Partizip II form.'); answer.reportValidity(); return; }
   if (correction !== undefined) {
-    const normalized = answer.value.normalize('NFC').trim().toLocaleLowerCase('de-DE');
-    if (normalized !== correction.normalize('NFC').trim().toLocaleLowerCase('de-DE')) {
+    if (!answersMatch(answer.value, correction)) {
       feedback.textContent = `Try again: type ${correction} to continue.`;
       answer.focus(); answer.select();
       return;

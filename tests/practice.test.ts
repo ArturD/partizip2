@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import { runInNewContext } from 'node:vm';
+import { answersMatch } from '../src/client/answers.ts';
 
 // Run the actual client handlers with DOM stand-ins and a mocked API.
 for (const result of ['wrong', 'typo', 'correct']) test(`${result}: correction flow preserves one logged attempt`, async () => {
@@ -16,15 +17,15 @@ for (const result of ['wrong', 'typo', 'correct']) test(`${result}: correction f
     });
     return elements.get(id);
   };
-  const source = readFileSync(new URL('../src/client/practice.ts', import.meta.url), 'utf8').replace(/^import .*;\r?\n/, '');
+  const source = readFileSync(new URL('../src/client/practice.ts', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '');
   runInNewContext(stripTypeScriptTypes(source), {
-    element, crypto: { randomUUID: () => 'test-attempt' },
+    element, answersMatch, crypto: { randomUUID: () => 'test-attempt' },
     labels: { wrong: 'Wrong', typo: 'Typo', correct: 'Correct' },
     api: async (path: string) => {
       calls.push(path);
       return path === '/api/verbs'
         ? [{ id: 'essen', infinitive: 'essen', english: 'eat', tier: 'essential', type: 'irregular', subtype: 'strong' }]
-        : { result, expected: 'gegessen' };
+        : { result, expected: 'gehört' };
     },
   });
   await Promise.resolve();
@@ -41,7 +42,7 @@ for (const result of ['wrong', 'typo', 'correct']) test(`${result}: correction f
     await submit('gegesen');
     assert.equal(element('next').hidden, true);
     assert.equal(element('tier').disabled, true);
-    await submit(' GEGESSEN ');
+    await submit(' GEHOERT ');
   }
   assert.equal(element('next').hidden, false);
   assert.equal(element('tier').disabled, false);

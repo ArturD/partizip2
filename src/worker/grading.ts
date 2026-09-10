@@ -1,8 +1,7 @@
-export function normalize(value: string): string {
-  return value.normalize('NFC').trim().toLocaleLowerCase('de-DE');
-}
+import { normalize, answersMatch } from '../client/answers.ts';
 /** One insertion, deletion, substitution or adjacent transposition. */
 export function grade(answer: string, expected: string): 'correct' | 'typo' | 'wrong' {
+  if (answersMatch(answer, expected)) return 'correct';
   const a = Array.from(normalize(answer)), b = Array.from(normalize(expected));
   if (a.join('') === b.join('')) return 'correct';
   if (!a.length || Math.abs(a.length - b.length) > 1) return 'wrong';
