@@ -6,7 +6,7 @@ export const lessonQuery = `WITH timeline AS (
           WHERE previous_at IS NULL OR julianday(answered_at) >= julianday(previous_at, '+30 minutes')
         ), lesson AS (
           SELECT *, ROW_NUMBER() OVER (ORDER BY answered_at, id) AS number,
-            AVG(CASE WHEN result = 'correct' THEN 100.0 ELSE 0 END)
+            AVG(CASE WHEN result = 'correct' THEN 100.0 WHEN result = 'typo' THEN 50.0 ELSE 0 END)
               OVER (ORDER BY answered_at, id ROWS BETWEEN 9 PRECEDING AND CURRENT ROW) AS accuracy
           FROM timeline WHERE answered_at >= (SELECT started_at FROM boundary)
             AND (? = '' OR tier = ?) AND (? = '' OR verb_type = ?)

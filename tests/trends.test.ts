@@ -10,13 +10,13 @@ test('daily trend weights answers, includes six warm-up days and leaves empty wi
     { day: '2026-06-07', total: 2, correct: 1 },
     { day: '2026-09-03', total: 50, correct: 50 },
     { day: '2026-09-09', total: 9, correct: 9 },
-    { day: '2026-09-10', total: 1, correct: 0 },
+    { day: '2026-09-10', total: 1, correct: 0, typo: 1 },
   ], '2026-09-10');
   assert.equal(points.length, 90);
   assert.equal(points[0].label, '2026-06-13');
   assert.equal(points[0].value, 50);
   assert.equal(points[1].value, null);
-  assert.equal(points.at(-1)?.value, 90); // 9/10, not a 50% mean of daily percentages.
+  assert.equal(points.at(-1)?.value, 95); // 9.5/10, not a 50% mean of daily percentages.
   assert.equal(dailyTrend([], '2026-09-10').every(point => point.value === null), true);
 });
 
@@ -35,7 +35,7 @@ test('lesson SQL uses the latest session, filters after session detection and ro
     const query = db.prepare(lessonQuery);
     const filtered = query.all('one', '', '', 'irregular', 'irregular');
     assert.equal(filtered.length, 12);
-    assert.equal(filtered[0].accuracy, 90);
+    assert.equal(filtered[0].accuracy, 95);
     assert.equal(filtered[1].accuracy, 100);
     assert.equal(filtered.at(-1)?.accuracy, 0);
     assert.equal(query.all('one', 'common', 'common', '', '').length, 0);

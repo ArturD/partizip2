@@ -24,7 +24,7 @@ const regular = await (await fetch(`${base}/api/progress?type=regular`, { header
 assert.equal(regular.summary.total, 0);
 const trend = await (await fetch(`${base}/api/trends`, { headers: { Cookie: cookie } })).json();
 assert.equal(trend.lesson.length, 3);
-assert.ok(Math.abs(trend.lesson.at(-1).accuracy - 100 / 3) < 0.001);
+assert.ok(Math.abs(trend.lesson.at(-1).accuracy - 50) < 0.001);
 assert.equal(trend.days.reduce((total, day) => total + day.total, 0), 3);
 const emptyTrend = await (await fetch(`${base}/api/trends?type=regular`, { headers: { Cookie: cookie } })).json();
 assert.equal(emptyTrend.lesson.length, 0);

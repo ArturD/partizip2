@@ -49,7 +49,7 @@ async function api(request: Request, env: Env, learner: string): Promise<Respons
         // Infer the latest lesson before applying filters, so filters cannot split a lesson.
         env.DB.prepare(lessonQuery).bind(...bindings),
         env.DB.prepare(`SELECT substr(answered_at, 1, 10) AS day, COUNT(*) AS total,
-          SUM(result = 'correct') AS correct FROM attempts
+          SUM(result = 'correct') AS correct, SUM(result = 'typo') AS typo FROM attempts
           WHERE ${where} AND answered_at >= ? GROUP BY day ORDER BY day`).bind(...bindings, since.toISOString()),
       ]);
       return json({ lesson: results[0].results.reverse(), days: results[1].results, today: new Date().toISOString().slice(0, 10) });

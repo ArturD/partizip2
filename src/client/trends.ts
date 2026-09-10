@@ -1,4 +1,4 @@
-export interface Day { day: string; total: number; correct: number }
+export interface Day { day: string; total: number; correct: number; typo?: number }
 export interface Point { label: string; value: number | null; detail: string; x: number }
 // Weight by answers, rather than treating a one-answer day like a 100-answer day.
 export function dailyTrend(days: Day[], today: string): Point[] {
@@ -11,10 +11,10 @@ export function dailyTrend(days: Day[], today: string): Point[] {
     let total = 0, correct = 0;
     for (let i = 0; i < 7; i++) {
       const day = counts.get(new Date(time - i * dayMs).toISOString().slice(0, 10));
-      total += day?.total ?? 0; correct += day?.correct ?? 0;
+      total += day?.total ?? 0; correct += (day?.correct ?? 0) + (day?.typo ?? 0) * 0.5;
     }
     const own = counts.get(label);
     return { label, x: index, value: total ? correct / total * 100 : null,
-      detail: `${own?.total ?? 0} answers this day; ${correct}/${total} correct over the trailing 7 days` };
+      detail: `${own?.total ?? 0} answers this day; ${correct}/${total} points over the trailing 7 days` };
   });
 }
