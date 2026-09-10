@@ -1,14 +1,34 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "partizip-practice-local",
-  "main": "src/worker/index.ts",
-  "compatibility_date": "2026-09-10",
-  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
-  "d1_databases": [{ "binding": "DB", "database_name": "partizip-local", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
-  "env": {
-    "production": {
-      "name": "partizip-practice",
-      "d1_databases": [{ "binding": "DB", "database_name": "partizip-production", "database_id": "REPLACE_WITH_PRODUCTION_D1_ID", "migrations_dir": "migrations" }]
-    }
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "partizip-practice-local",
+	"main": "src/worker/index.ts",
+	"compatibility_date": "2026-09-10",
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "partizip-local",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	"env": {
+		"production": {
+			"name": "partizip-practice",
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "partizip-production",
+					"database_id": "b632fc02-2794-407a-9045-a12bc403533e",
+					"migrations_dir": "migrations"
+				}
+			]
+		}
+	}
 }

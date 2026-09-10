@@ -16,6 +16,16 @@ German infinitive → Partizip II, with anonymous per-browser history. Editorial
 
 ## Local development
 
+On this Windows machine, enable the bundled Node.js and pnpm in each new PowerShell window:
+
+```powershell
+cd "$env:USERPROFILE\OneDrive\Documents\ChatGPT\partizip2"
+.\powershell_setup.ps1
+pnpm dev
+```
+
+The setup script updates only the current terminal's PATH, works when run repeatedly, and does not install software or change your PowerShell profile. It uses the runtime bundled on this machine; other machines can install the tools below normally.
+
 Install Node.js 22.18+ (Node 24 LTS recommended) and pnpm. The machine's default Node 14 is too old for current Wrangler. There are only three development dependencies: TypeScript, Wrangler, and Cloudflare's type definitions. The lockfile pins transitive dependencies; no application runtime packages.
 
 ```sh
