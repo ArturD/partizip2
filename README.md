@@ -87,8 +87,14 @@ This version requires no paid service within these limits. Free quota exhaustion
 
 ## Progress graphs
 
-The Progress page shows a trailing 10-answer accuracy curve for the latest lesson. A gap of at least 30 minutes between saved attempts starts a new lesson, detected before tier/type filtering. The first nine points use the available answers; the latest 500 points are displayed for very long lessons. After 20 answers, the page compares the latest ten with the first ten when that baseline is visible.
+The Progress page shows a trailing 10-answer accuracy curve for the latest lesson. A gap of at least 30 minutes between saved attempts starts a new lesson, detected before tier/type filtering. The first nine points are hidden with the default period of 10; the latest 500 points are displayed for very long lessons. The lesson chart offers SMA or EMA with an editable period from 1 to 100 (default 10). Both start at the first complete period. EMA starts with that period’s mean and then uses alpha = 2/(N+1). Smoothing uses the full lesson, with only the latest 500 complete points drawn. Daily smoothing remains seven calendar days.
 
 The daily graph shows 90 UTC calendar days of trailing seven-day accuracy, weighted by answer count. Six extra days are fetched to calculate the first visible point. No-practice days add neither successes nor failures; a window with no attempts has no value. Plots award 1 point for correct answers, 0.5 for typos and 0 for wrong answers, and correction exercises are never included. Existing attempts work without a migration. Different tiers and practice mixes can affect accuracy, so this is practice feedback rather than a controlled proficiency measurement.
 
 Charts use native SVG with expandable data tables, no added packages. Use Refresh progress after practicing in another tab; returning to a visible Progress tab also reloads its data. Daily queries read only the last 96 days; lesson detection currently reads the learner's lifetime history (consider explicit session IDs if history grows very large).
+
+## Common-errors practice
+
+The Common errors tab selects up to 20 verbs from each learner's last five normal answers per verb, ranked by lost points (wrong = 1, typo = 0.5). A verb needs at least one lost point to qualify. Targeted answers are saved with `practice_mode = 'errors'`; correction retyping remains unlogged. The set updates on page load and does not use targeted attempts as evidence. Five correct normal answers retire an old error from the set.
+
+Apply migration `0002_practice_mode.sql` locally with `pnpm db:local` and in production with `pnpm db:production` before deploying. Existing attempts default to normal practice. Progress defaults to normal-only for history, totals and both graphs; use Practice included to see targeted-only or all attempts. Lesson boundaries are calculated within the chosen mode, before tier/type filters.

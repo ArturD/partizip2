@@ -6,8 +6,8 @@ assert.equal(initial.status, 200);
 const cookie = initial.headers.get('set-cookie').split(';')[0];
 const verbs = await initial.json();
 assert.equal(verbs.length, 50); assert.ok(!('participle' in verbs[0]));
-async function send(answer, id = crypto.randomUUID(), origin = base) {
-  const response = await fetch(`${base}/api/attempts`, { method: 'POST', headers: { Cookie: cookie, Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ id, verbId: 'essen', answer }) });
+async function send(answer, id = crypto.randomUUID(), origin = base, mode = 'standard') {
+  const response = await fetch(`${base}/api/attempts`, { method: 'POST', headers: { Cookie: cookie, Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ id, verbId: 'essen', answer, mode }) });
   return { response, body: await response.json() };
 }
 const id = crypto.randomUUID();
@@ -29,6 +29,26 @@ assert.equal(trend.days.reduce((total, day) => total + day.total, 0), 3);
 const emptyTrend = await (await fetch(`${base}/api/trends?type=regular`, { headers: { Cookie: cookie } })).json();
 assert.equal(emptyTrend.lesson.length, 0);
 assert.equal(emptyTrend.days.length, 0);
+const get = async path => (await fetch(base + path, { headers: { Cookie: cookie } })).json();
+const errors = await get('/api/common-errors');
+assert.deepEqual(errors.map(verb => verb.id), ['essen']);
+assert.ok(!('participle' in errors[0]));
+const targetedId = crypto.randomUUID();
+const targeted = await send('gegessen', targetedId, base, 'errors');
+assert.equal(targeted.body.practice_mode, 'errors');
+assert.deepEqual((await send('gegessen', targetedId, base, 'errors')).body, targeted.body);
+assert.equal((await get('/api/progress')).summary.total, 3);
+assert.equal((await get('/api/progress?mode=errors')).summary.total, 1);
+assert.equal((await get('/api/progress?mode=all')).summary.total, 4);
+assert.equal((await get('/api/trends')).lesson.length, 3);
+assert.equal((await get('/api/trends?mode=errors')).lesson.length, 1);
+assert.equal((await get('/api/trends?mode=all')).lesson.length, 4);
+assert.equal((await get('/api/trends')).days.reduce((sum, day) => sum + day.total, 0), 3);
+assert.equal((await get('/api/trends?mode=errors')).days.reduce((sum, day) => sum + day.total, 0), 1);
+assert.deepEqual(await get('/api/common-errors'), errors);
+assert.equal((await send('gegessen', crypto.randomUUID(), base, 'invalid')).response.status, 400);
+assert.equal((await fetch(`${base}/api/progress?mode=invalid`)).status, 400);
+assert.deepEqual(await (await fetch(`${base}/api/common-errors`)).json(), []);
 const separate = await (await fetch(`${base}/api/progress`)).json(); assert.equal(separate.summary.total, 0);
 assert.equal((await fetch(`${base}/api/progress?type=invalid`)).status, 400);
 for (const path of ['/', '/progress.html', '/js/practice.js', '/js/progress.js', '/style.css']) assert.equal((await fetch(base + path)).status, 200, path);

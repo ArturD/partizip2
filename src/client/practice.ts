@@ -3,6 +3,7 @@ import { answersMatch } from './answers.js';
 interface Verb { id: string; infinitive: string; english: string; tier: string; type: string; subtype: string; separable: boolean }
 const answer = element<HTMLInputElement>('answer'), check = element<HTMLButtonElement>('check'), next = element<HTMLButtonElement>('next');
 const tier = element<HTMLSelectElement>('tier'), type = element<HTMLSelectElement>('type'), feedback = element('feedback');
+const mode = document.body.dataset.mode === 'errors' ? 'errors' : 'standard';
 let verbs: Verb[] = [], deck: Verb[] = [], current: Verb | undefined, attemptId = '', pendingAnswer: string | undefined;
 let correction: string | undefined;
 function draw() {
@@ -16,7 +17,7 @@ function draw() {
   answer.value = ''; answer.disabled = !current; answer.readOnly = false; check.disabled = !current; check.hidden = false; next.hidden = true; feedback.textContent = ''; feedback.className = '';
   answer.setCustomValidity(''); check.textContent = 'Check answer ↵';
   element('word').textContent = current?.infinitive || 'No verbs yet';
-  element('meaning').textContent = current?.english || 'Choose another tier or type to keep practicing.';
+  element('meaning').textContent = current?.english || (mode === 'errors' ? 'No common errors in this selection. Try another filter or do some normal practice first.' : 'Choose another tier or type to keep practicing.');
   element('tag').textContent = current ? `${current.tier} · ${current.subtype}${current.separable ? ' · separable' : ''}` : 'Empty practice set';
   element('counter').textContent = current ? `${deck.length + 1} left in this round` : '0 words';
   if (current) answer.focus();
@@ -41,7 +42,7 @@ element<HTMLFormElement>('answer-form').addEventListener('submit', async event =
   check.disabled = true; answer.readOnly = true; tier.disabled = type.disabled = true;
   feedback.className = ''; feedback.textContent = 'Saving your answer…';
   try {
-    const saved = await api<{ result: string; expected: string }>('/api/attempts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, verbId: current.id, answer: pendingAnswer }) });
+    const saved = await api<{ result: string; expected: string }>('/api/attempts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, verbId: current.id, answer: pendingAnswer, mode }) });
     feedback.className = saved.result; feedback.textContent = `${labels[saved.result]}. ${current.infinitive} → ${saved.expected}`;
     if (saved.result !== 'correct') {
       correction = saved.expected;
@@ -57,4 +58,4 @@ element<HTMLFormElement>('answer-form').addEventListener('submit', async event =
   } finally { tier.disabled = type.disabled = correction !== undefined; }
 });
 answer.addEventListener('input', () => answer.setCustomValidity(''));
-api<Verb[]>('/api/verbs').then(data => { verbs = data; draw(); }).catch(() => { element('word').textContent = 'Unable to load'; element('meaning').textContent = 'Please reload the page to try again.'; });
+api<Verb[]>(mode === 'errors' ? '/api/common-errors' : '/api/verbs').then(data => { verbs = data; draw(); }).catch(() => { element('word').textContent = 'Unable to load'; element('meaning').textContent = 'Please reload the page to try again.'; });

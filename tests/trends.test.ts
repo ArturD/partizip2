@@ -2,8 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
-import { dailyTrend } from '../src/client/trends.ts';
+import { dailyTrend, smoothLesson } from '../src/client/trends.ts';
 import { lessonQuery } from '../src/worker/trends.ts';
+test('SMA skips partial windows and EMA seeds from the first full average', () => {
+  const answers = [0, 50, 100, 100, 0].map((score, index) => ({ score, number: index + 1, answered_at: '2026-09-10T00:00:00Z' }));
+  assert.deepEqual(smoothLesson(answers, 3, 'sma').map(point => point.accuracy), [null, null, 50, 250 / 3, 200 / 3]);
+  assert.deepEqual(smoothLesson(answers, 3, 'ema').map(point => point.accuracy), [null, null, 50, 75, 37.5]);
+  assert.ok(smoothLesson(answers, 10, 'sma').every(point => point.accuracy === null));
+  assert.deepEqual(smoothLesson(answers, 1, 'ema').map(point => point.accuracy), [0, 50, 100, 100, 0]);
+  for (const n of [0, 101, 1.5, NaN]) assert.throws(() => smoothLesson(answers, n, 'sma'));
+});
 
 test('daily trend weights answers, includes six warm-up days and leaves empty windows blank', () => {
   const points = dailyTrend([
@@ -24,7 +32,8 @@ test('lesson SQL uses the latest session, filters after session detection and ro
   const db = new DatabaseSync(':memory:');
   try {
     db.exec(readFileSync(new URL('../migrations/0001_attempts.sql', import.meta.url), 'utf8'));
-    const insert = db.prepare('INSERT INTO attempts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    db.exec(readFileSync(new URL('../migrations/0002_practice_mode.sql', import.meta.url), 'utf8'));
+    const insert = db.prepare('INSERT INTO attempts (id, learner_id, verb_id, tier, verb_type, answer, expected, result, answered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
     let id = 0;
     const add = (minute: number, result = 'correct', type = 'irregular', learner = 'one') => insert.run(String(++id), learner, 'essen', 'essential', type, 'test', 'gegessen', result, new Date(Date.UTC(2026, 8, 10, 10, minute)).toISOString());
     add(-60, 'wrong'); // Previous lesson must not enter the rolling average.
@@ -33,14 +42,14 @@ test('lesson SQL uses the latest session, filters after session detection and ro
     add(50, 'typo');
     add(55, 'wrong', 'irregular', 'someone-else');
     const query = db.prepare(lessonQuery);
-    const filtered = query.all('one', '', '', 'irregular', 'irregular');
+    const filtered = query.all('one', 'standard', 'standard', '', '', 'irregular', 'irregular');
     assert.equal(filtered.length, 12);
     assert.equal(filtered[0].accuracy, 95);
     assert.equal(filtered[1].accuracy, 100);
     assert.equal(filtered.at(-1)?.accuracy, 0);
-    assert.equal(query.all('one', 'common', 'common', '', '').length, 0);
+    assert.equal(query.all('one', 'standard', 'standard', 'common', 'common', '', '').length, 0);
     add(80); // Exactly 30 minutes marks a new lesson.
-    const latest = query.all('one', '', '', '', '');
+    const latest = query.all('one', 'standard', 'standard', '', '', '', '');
     assert.equal(latest.length, 1);
     assert.equal(latest[0].number, 1);
     assert.equal(latest[0].accuracy, 100);

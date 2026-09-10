@@ -19,7 +19,7 @@ for (const result of ['wrong', 'typo', 'correct']) test(`${result}: correction f
   };
   const source = readFileSync(new URL('../src/client/practice.ts', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '');
   runInNewContext(stripTypeScriptTypes(source), {
-    element, answersMatch, crypto: { randomUUID: () => 'test-attempt' },
+    document: { body: { dataset: {} } }, element, answersMatch, crypto: { randomUUID: () => 'test-attempt' },
     labels: { wrong: 'Wrong', typo: 'Typo', correct: 'Correct' },
     api: async (path: string) => {
       calls.push(path);

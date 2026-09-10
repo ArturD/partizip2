@@ -1,4 +1,5 @@
 import { lessonQuery } from './trends';
+import { commonErrorsQuery } from './common-errors';
 import { verbs } from '../data/verbs';
 import { grade } from './grading';
 interface Env { DB: D1Database; ASSETS: Fetcher }
@@ -9,6 +10,15 @@ async function api(request: Request, env: Env, learner: string): Promise<Respons
   const url = new URL(request.url);
   if (request.method === 'GET' && url.pathname === '/api/verbs') {
     return json(verbs.map(({ participle, ...verb }) => verb));
+  }
+  if (request.method === 'GET' && url.pathname === '/api/common-errors') {
+    const rows = await env.DB.prepare(commonErrorsQuery).bind(learner).all<{ verb_id: string }>();
+    return json(rows.results.flatMap(row => {
+      const verb = verbs.find(verb => verb.id === row.verb_id);
+      if (!verb) return [];
+      const { participle, ...prompt } = verb;
+      return [prompt];
+    }));
   }
   if (request.method === 'POST' && url.pathname === '/api/attempts') {
     if (request.headers.get('Origin') !== url.origin) return json({ error: 'Invalid request origin.' }, 403);
@@ -25,24 +35,28 @@ async function api(request: Request, env: Env, learner: string): Promise<Respons
       raw += decoder.decode(value, { stream: true });
     }
     raw += decoder.decode();
-    let body: { id?: unknown; verbId?: unknown; answer?: unknown };
+    let body: { id?: unknown; verbId?: unknown; answer?: unknown; mode?: unknown };
     try { body = JSON.parse(raw); } catch { return json({ error: 'Invalid JSON.' }, 400); }
     if (!body || typeof body.id !== 'string' || !uuid.test(body.id) || typeof body.answer !== 'string' || !body.answer.trim() || body.answer.length > 100) return json({ error: 'Enter an answer of 1–100 characters.' }, 400);
     const verb = verbs.find(v => v.id === body.verbId);
+    const mode = body.mode ?? 'standard';
+    if (mode !== 'standard' && mode !== 'errors') return json({ error: 'Invalid practice mode.' }, 400);
     if (!verb) return json({ error: 'Unknown verb.' }, 400);
     const result = grade(body.answer, verb.participle);
-    await env.DB.prepare('INSERT INTO attempts (id, learner_id, verb_id, tier, verb_type, answer, expected, result, answered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING')
-      .bind(body.id, learner, verb.id, verb.tier, verb.type, body.answer, verb.participle, result, new Date().toISOString()).run();
-    const saved = await env.DB.prepare('SELECT id, verb_id, answer, expected, result, answered_at FROM attempts WHERE id = ? AND learner_id = ?').bind(body.id, learner).first();
+    await env.DB.prepare('INSERT INTO attempts (id, learner_id, verb_id, tier, verb_type, answer, expected, result, answered_at, practice_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING')
+      .bind(body.id, learner, verb.id, verb.tier, verb.type, body.answer, verb.participle, result, new Date().toISOString(), mode).run();
+    const saved = await env.DB.prepare('SELECT id, verb_id, answer, expected, result, answered_at, practice_mode FROM attempts WHERE id = ? AND learner_id = ?').bind(body.id, learner).first();
     if (!saved) return json({ error: 'Attempt ID conflict. Reload and try again.' }, 409);
     return json(saved);
   }
   if (request.method === 'GET' && ['/api/progress', '/api/trends'].includes(url.pathname)) {
     const tier = url.searchParams.get('tier') || '', type = url.searchParams.get('type') || '';
     const offset = Number(url.searchParams.get('offset') || 0);
+    const mode = url.searchParams.get('mode') || 'standard';
+    if (!['standard', 'errors', 'all'].includes(mode)) return json({ error: 'Invalid practice mode.' }, 400);
     if (!['', 'essential', 'common', 'extended'].includes(tier) || !['', 'regular', 'irregular'].includes(type) || !Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) return json({ error: 'Invalid filter.' }, 400);
-    const where = 'learner_id = ? AND (? = \'\' OR tier = ?) AND (? = \'\' OR verb_type = ?)';
-    const bindings = [learner, tier, tier, type, type];
+    const where = 'learner_id = ? AND (? = \'all\' OR practice_mode = ?) AND (? = \'\' OR tier = ?) AND (? = \'\' OR verb_type = ?)';
+    const bindings = [learner, mode, mode, tier, tier, type, type];
     if (url.pathname === '/api/trends') {
       const since = new Date(); since.setUTCHours(0, 0, 0, 0); since.setUTCDate(since.getUTCDate() - 95);
       const results = await env.DB.batch([
@@ -56,7 +70,7 @@ async function api(request: Request, env: Env, learner: string): Promise<Respons
     }
     const results = await env.DB.batch([
       env.DB.prepare(`SELECT COUNT(*) AS total, COALESCE(SUM(result = 'correct'), 0) AS correct, COALESCE(SUM(result = 'typo'), 0) AS typo, COALESCE(SUM(result = 'wrong'), 0) AS wrong, COUNT(DISTINCT verb_id) AS practiced FROM attempts WHERE ${where}`).bind(...bindings),
-      env.DB.prepare(`SELECT id, verb_id, answer, expected, result, answered_at, tier, verb_type FROM attempts WHERE ${where} ORDER BY answered_at DESC, id DESC LIMIT 50 OFFSET ?`).bind(...bindings, offset),
+      env.DB.prepare(`SELECT id, verb_id, answer, expected, result, answered_at, tier, verb_type, practice_mode FROM attempts WHERE ${where} ORDER BY answered_at DESC, id DESC LIMIT 50 OFFSET ?`).bind(...bindings, offset),
     ]);
     return json({ summary: results[0].results[0], attempts: results[1].results, offset });
   }
