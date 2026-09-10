@@ -1,3 +1,4 @@
+import { lessonQuery } from './trends';
 import { verbs } from '../data/verbs';
 import { grade } from './grading';
 interface Env { DB: D1Database; ASSETS: Fetcher }
@@ -36,12 +37,23 @@ async function api(request: Request, env: Env, learner: string): Promise<Respons
     if (!saved) return json({ error: 'Attempt ID conflict. Reload and try again.' }, 409);
     return json(saved);
   }
-  if (request.method === 'GET' && url.pathname === '/api/progress') {
+  if (request.method === 'GET' && ['/api/progress', '/api/trends'].includes(url.pathname)) {
     const tier = url.searchParams.get('tier') || '', type = url.searchParams.get('type') || '';
     const offset = Number(url.searchParams.get('offset') || 0);
     if (!['', 'essential', 'common', 'extended'].includes(tier) || !['', 'regular', 'irregular'].includes(type) || !Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) return json({ error: 'Invalid filter.' }, 400);
     const where = 'learner_id = ? AND (? = \'\' OR tier = ?) AND (? = \'\' OR verb_type = ?)';
     const bindings = [learner, tier, tier, type, type];
+    if (url.pathname === '/api/trends') {
+      const since = new Date(); since.setUTCHours(0, 0, 0, 0); since.setUTCDate(since.getUTCDate() - 95);
+      const results = await env.DB.batch([
+        // Infer the latest lesson before applying filters, so filters cannot split a lesson.
+        env.DB.prepare(lessonQuery).bind(...bindings),
+        env.DB.prepare(`SELECT substr(answered_at, 1, 10) AS day, COUNT(*) AS total,
+          SUM(result = 'correct') AS correct FROM attempts
+          WHERE ${where} AND answered_at >= ? GROUP BY day ORDER BY day`).bind(...bindings, since.toISOString()),
+      ]);
+      return json({ lesson: results[0].results.reverse(), days: results[1].results, today: new Date().toISOString().slice(0, 10) });
+    }
     const results = await env.DB.batch([
       env.DB.prepare(`SELECT COUNT(*) AS total, COALESCE(SUM(result = 'correct'), 0) AS correct, COALESCE(SUM(result = 'typo'), 0) AS typo, COALESCE(SUM(result = 'wrong'), 0) AS wrong, COUNT(DISTINCT verb_id) AS practiced FROM attempts WHERE ${where}`).bind(...bindings),
       env.DB.prepare(`SELECT id, verb_id, answer, expected, result, answered_at, tier, verb_type FROM attempts WHERE ${where} ORDER BY answered_at DESC, id DESC LIMIT 50 OFFSET ?`).bind(...bindings, offset),

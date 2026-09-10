@@ -22,6 +22,13 @@ const progress = await (await fetch(`${base}/api/progress`, { headers: { Cookie:
 assert.deepEqual(progress.summary, { total: 3, correct: 1, typo: 1, wrong: 1, practiced: 1 });
 const regular = await (await fetch(`${base}/api/progress?type=regular`, { headers: { Cookie: cookie } })).json();
 assert.equal(regular.summary.total, 0);
+const trend = await (await fetch(`${base}/api/trends`, { headers: { Cookie: cookie } })).json();
+assert.equal(trend.lesson.length, 3);
+assert.ok(Math.abs(trend.lesson.at(-1).accuracy - 100 / 3) < 0.001);
+assert.equal(trend.days.reduce((total, day) => total + day.total, 0), 3);
+const emptyTrend = await (await fetch(`${base}/api/trends?type=regular`, { headers: { Cookie: cookie } })).json();
+assert.equal(emptyTrend.lesson.length, 0);
+assert.equal(emptyTrend.days.length, 0);
 const separate = await (await fetch(`${base}/api/progress`)).json(); assert.equal(separate.summary.total, 0);
 assert.equal((await fetch(`${base}/api/progress?type=invalid`)).status, 400);
 for (const path of ['/', '/progress.html', '/js/practice.js', '/js/progress.js', '/style.css']) assert.equal((await fetch(base + path)).status, 200, path);
