@@ -3,7 +3,7 @@ export const lessonQuery = `WITH timeline AS (
           FROM attempts WHERE learner_id = ? AND (? = 'all' OR practice_mode = ?)
         ), boundary AS (
           SELECT MAX(answered_at) AS started_at FROM timeline
-          WHERE previous_at IS NULL OR julianday(answered_at) >= julianday(previous_at, '+30 minutes')
+          WHERE previous_at IS NULL OR julianday(answered_at) >= julianday(previous_at, '+4 hours')
         ), lesson AS (
           SELECT *, ROW_NUMBER() OVER (ORDER BY answered_at, id) AS number,
             AVG(CASE WHEN result = 'correct' THEN 100.0 WHEN result = 'typo' THEN 50.0 ELSE 0 END)

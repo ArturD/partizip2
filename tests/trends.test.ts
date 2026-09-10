@@ -36,7 +36,7 @@ test('lesson SQL uses the latest session, filters after session detection and ro
     const insert = db.prepare('INSERT INTO attempts (id, learner_id, verb_id, tier, verb_type, answer, expected, result, answered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
     let id = 0;
     const add = (minute: number, result = 'correct', type = 'irregular', learner = 'one') => insert.run(String(++id), learner, 'essen', 'essential', type, 'test', 'gegessen', result, new Date(Date.UTC(2026, 8, 10, 10, minute)).toISOString());
-    add(-60, 'wrong'); // Previous lesson must not enter the rolling average.
+    add(-300, 'wrong'); // Previous lesson must not enter the rolling average.
     for (let minute = 0; minute < 11; minute++) add(minute, minute === 0 ? 'wrong' : 'correct');
     add(30, 'correct', 'regular'); // Bridges filtered irregular points 40 minutes apart.
     add(50, 'typo');
@@ -48,7 +48,9 @@ test('lesson SQL uses the latest session, filters after session detection and ro
     assert.equal(filtered[1].accuracy, 100);
     assert.equal(filtered.at(-1)?.accuracy, 0);
     assert.equal(query.all('one', 'standard', 'standard', 'common', 'common', '', '').length, 0);
-    add(80); // Exactly 30 minutes marks a new lesson.
+    add(289); // 3h59 after the last answer stays in the lesson.
+    assert.equal(query.all('one', 'standard', 'standard', '', '', '', '').length, 14);
+    add(529); // Exactly four hours after the last answer starts a new lesson.
     const latest = query.all('one', 'standard', 'standard', '', '', '', '');
     assert.equal(latest.length, 1);
     assert.equal(latest[0].number, 1);
