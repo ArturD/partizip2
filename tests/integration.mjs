@@ -32,7 +32,7 @@ assert.equal(emptyTrend.days.length, 0);
 const get = async path => (await fetch(base + path, { headers: { Cookie: cookie } })).json();
 const errors = await get('/api/common-errors');
 assert.deepEqual(errors.map(verb => verb.id), ['essen']);
-assert.ok(!('participle' in errors[0]));
+assert.equal(errors[0].participle, 'gegessen');
 const targetedId = crypto.randomUUID();
 const targeted = await send('gegessen', targetedId, base, 'errors');
 assert.equal(targeted.body.practice_mode, 'errors');

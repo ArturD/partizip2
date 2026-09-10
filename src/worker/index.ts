@@ -16,8 +16,7 @@ async function api(request: Request, env: Env, learner: string): Promise<Respons
     return json(rows.results.flatMap(row => {
       const verb = verbs.find(verb => verb.id === row.verb_id);
       if (!verb) return [];
-      const { participle, ...prompt } = verb;
-      return [prompt];
+      return [verb];
     }));
   }
   if (request.method === 'POST' && url.pathname === '/api/attempts') {

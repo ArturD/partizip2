@@ -3,3 +3,5 @@
 .trend-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.trend-heading h2{font-size:24px}.trend-heading button{font-size:14px}.trend-card{background:white;border:1px solid #d6dfe7;border-radius:12px;padding:24px;margin:20px 0}.trend-card h2{margin:0;font-size:22px}.trend-card svg{display:block;width:100%;height:auto;min-height:160px}.trend-card summary{cursor:pointer;font-size:14px;color:#236db0;padding:10px 0}.trend-card details .table-scroll{max-height:320px}.trend-card>p:not(.small){font-size:18px;font-weight:600}@media(max-width:720px){.trend-card{padding:16px}.trend-card svg{min-height:0}}
 
 .filters{flex-wrap:wrap}header{gap:16px;flex-wrap:wrap}@media(max-width:420px){nav{gap:16px;font-size:14px}}
+
+.answer-toggle{display:flex;align-items:center;gap:10px;font-weight:400}.answer-toggle input{width:20px;height:20px;flex-shrink:0}.model-answer{background:#eef3f8;border-radius:8px;padding:16px;margin-top:16px}.model-answer span{display:block;font-size:14px;color:#526577}.model-answer strong{display:block;font-size:28px;overflow-wrap:anywhere}

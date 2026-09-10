@@ -1,11 +1,19 @@
 import { api, element, labels } from './api.js';
 import { answersMatch } from './answers.js';
-interface Verb { id: string; infinitive: string; english: string; tier: string; type: string; subtype: string; separable: boolean }
+interface Verb { id: string; infinitive: string; english: string; tier: string; type: string; subtype: string; separable: boolean; participle?: string }
 const answer = element<HTMLInputElement>('answer'), check = element<HTMLButtonElement>('check'), next = element<HTMLButtonElement>('next');
 const tier = element<HTMLSelectElement>('tier'), type = element<HTMLSelectElement>('type'), feedback = element('feedback');
 const mode = document.body.dataset.mode === 'errors' ? 'errors' : 'standard';
 let verbs: Verb[] = [], deck: Verb[] = [], current: Verb | undefined, attemptId = '', pendingAnswer: string | undefined;
 let correction: string | undefined;
+function updateModelAnswer() {
+  if (mode !== 'errors') return;
+  const hide = element<HTMLInputElement>('hide-answer');
+  element('model-answer').textContent = current?.participle ?? '';
+  element('model-answer-panel').hidden = hide.checked || !current?.participle;
+  hide.disabled = !current;
+}
+if (mode === 'errors') element('hide-answer').addEventListener('change', updateModelAnswer);
 function draw() {
   if (correction !== undefined) return;
   if (!deck.length) {
@@ -20,6 +28,7 @@ function draw() {
   element('meaning').textContent = current?.english || (mode === 'errors' ? 'No common errors in this selection. Try another filter or do some normal practice first.' : 'Choose another tier or type to keep practicing.');
   element('tag').textContent = current ? `${current.tier} · ${current.subtype}${current.separable ? ' · separable' : ''}` : 'Empty practice set';
   element('counter').textContent = current ? `${deck.length + 1} left in this round` : '0 words';
+  updateModelAnswer();
   if (current) answer.focus();
 }
 for (const select of [tier, type]) select.addEventListener('change', () => { if (correction !== undefined) return; deck = []; draw(); });
