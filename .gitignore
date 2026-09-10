@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+public/js/
+.env*
+.dev.vars*
+dist/
+.pnpm-store/

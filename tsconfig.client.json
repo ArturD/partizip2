@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.json","compilerOptions":{"noEmit":false,"lib":["ES2022","DOM"],"outDir":"public/js","rootDir":"src/client","types":[]},"include":["src/client/**/*.ts"]}
