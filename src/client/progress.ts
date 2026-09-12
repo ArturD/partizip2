@@ -37,10 +37,12 @@ async function loadTrends() {
       element('lesson-insight').textContent = `${data.lesson.length}/${n} answers: ${Math.max(0, n - data.lesson.length)} more needed for the first full point.`;
       element('lesson-chart').textContent = 'The graph starts when one full period is available.';
     }
-    const days = dailyTrend(data.days, data.today);
-    chart(element('days-chart'), days, 'Daily trend: answer-weighted accuracy over the trailing 7 UTC days');
+    const dailyWindow = element<HTMLSelectElement>('daily-smoothing').value === '7' ? 7 : 1;
+    const days = dailyTrend(data.days, data.today, dailyWindow);
+    chart(element('days-chart'), days, dailyWindow === 1 ? 'Daily accuracy by UTC date' : 'Daily trend: answer-weighted accuracy over the trailing 7 UTC days');
     const current = days.at(-1)!;
-    element('days-insight').textContent = current.value === null ? 'No answers in the last 7 days. Start a lesson to pick up your trend.' : `${Math.round(current.value)}% over the last 7 days. ${current.detail.split('; ')[1]}.`;
+    const range = dailyWindow === 1 ? 'today (UTC)' : 'over the last 7 days';
+    element('days-insight').textContent = current.value === null ? `No answers ${range}. Start a lesson to add a point.` : `${Math.round(current.value)}% ${range}. ${current.detail.split('; ')[1]}.`;
     element('trend-status').textContent = 'Trends updated. All graphs follow the selected practice mode, tier and type.';
   } catch (error) {
     if (version !== trendGeneration) return;
@@ -78,7 +80,7 @@ async function load() {
   }
 }
 for (const select of [tier, type, mode]) select.addEventListener('change', () => { offset = 0; void load(); void loadTrends(); });
-for (const control of [period, method]) control.addEventListener('change', () => { void loadTrends(); });
+for (const control of [period, method, element('daily-smoothing')]) control.addEventListener('change', () => { void loadTrends(); });
 element('refresh').addEventListener('click', () => { void load(); void loadTrends(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { void load(); void loadTrends(); } });
 previous.addEventListener('click', () => { offset = Math.max(0, offset - 50); void load(); });

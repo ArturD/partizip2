@@ -19,7 +19,7 @@ test('daily trend weights answers, includes six warm-up days and leaves empty wi
     { day: '2026-09-03', total: 50, correct: 50 },
     { day: '2026-09-09', total: 9, correct: 9 },
     { day: '2026-09-10', total: 1, correct: 0, typo: 1 },
-  ], '2026-09-10');
+  ], '2026-09-10', 7);
   assert.equal(points.length, 90);
   assert.equal(points[0].label, '2026-06-13');
   assert.equal(points[0].value, 50);
@@ -56,4 +56,15 @@ test('lesson SQL uses the latest session, filters after session detection and ro
     assert.equal(latest[0].number, 1);
     assert.equal(latest[0].accuracy, 100);
   } finally { db.close(); }
+});
+
+test('daily accuracy defaults to unsmoothed scores and gaps on rest days', () => {
+  const points = dailyTrend([
+    { day: '2026-09-08', total: 9, correct: 9 },
+    { day: '2026-09-10', total: 2, correct: 0, typo: 1 },
+  ], '2026-09-10');
+  assert.equal(points.at(-3)?.value, 100);
+  assert.equal(points.at(-2)?.value, null);
+  assert.equal(points.at(-1)?.value, 25);
+  assert.match(points.at(-1)!.detail, /0.5\/2 points this day/);
 });
