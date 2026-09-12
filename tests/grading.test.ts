@@ -21,7 +21,7 @@ test('accepts German keyboard alternatives without conflating ordinary vowel pai
   assert.equal(grade('gedauert', 'gedauert'), 'correct');
 });
 test('vocabulary has unique stable IDs, consistent types and valid forms', () => {
-  assert.equal(verbs.length, 50);
+  assert.equal(verbs.length, 110);
   assert.equal(new Set(verbs.map(v => v.id)).size, verbs.length);
   for (const verb of verbs) {
     assert.equal(grade(verb.participle, verb.participle), 'correct');
@@ -37,6 +37,9 @@ test('practice sets cover essential regulars and common irregulars', () => {
   assert.equal(count('essential', 'regular'), 15);
   assert.equal(count('essential', 'irregular'), 15);
   assert.equal(count('common', 'irregular'), 20);
+  assert.equal(count('common', 'regular'), 20);
+  assert.equal(count('extended', 'regular'), 20);
+  assert.equal(count('extended', 'irregular'), 20);
   for (const [id, participle] of [['arbeiten', 'gearbeitet'], ['bezahlen', 'bezahlt'], ['telefonieren', 'telefoniert'], ['einkaufen', 'eingekauft'], ['bringen', 'gebracht'], ['aufstehen', 'aufgestanden']]) {
     assert.equal(verbs.find(v => v.id === id)?.participle, participle);
   }

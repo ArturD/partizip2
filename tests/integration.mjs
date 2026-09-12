@@ -5,7 +5,7 @@ const initial = await fetch(`${base}/api/verbs`);
 assert.equal(initial.status, 200);
 const cookie = initial.headers.get('set-cookie').split(';')[0];
 const verbs = await initial.json();
-assert.equal(verbs.length, 50); assert.ok(!('participle' in verbs[0]));
+assert.equal(verbs.length, 110); assert.ok(!('participle' in verbs[0]));
 async function send(answer, id = crypto.randomUUID(), origin = base, mode = 'standard') {
   const response = await fetch(`${base}/api/attempts`, { method: 'POST', headers: { Cookie: cookie, Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ id, verbId: 'essen', answer, mode }) });
   return { response, body: await response.json() };

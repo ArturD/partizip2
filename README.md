@@ -12,7 +12,7 @@ Small HTML/CSS/TypeScript app served by one Cloudflare Worker with D1. No fronte
 
 ## Initial decisions
 
-German infinitive → Partizip II, with anonymous per-browser history. Editorial importance tiers: essential, common, extended. The vocabulary contains 50 verbs: the original 15 irregulars and 15 regulars in Essential (Tier 1), plus 20 everyday irregulars in Common (Tier 2). These are learning groups, not strict frequency rankings; several Tier 2 verbs are also extremely frequent. Extended (Tier 3) is currently empty. `teilnahmen` is corrected to `teilnehmen`. `werden` means “become” here, so the expected participle is `geworden`; passive-auxiliary `worden` is outside this exercise.
+German infinitive → Partizip II, with anonymous per-browser history. Editorial importance tiers: essential, common, extended. The vocabulary contains 110 verbs: 15 regular and 15 irregular in Essential (Tier 1), 20 regular and 20 irregular in Common (Tier 2), and 20 regular and 20 irregular in Extended (Tier 3). These are learning groups, not strict frequency rankings; several Tier 2 verbs are also extremely frequent. `teilnahmen` is corrected to `teilnehmen`. `werden` means “become” here, so the expected participle is `geworden`; passive-auxiliary `worden` is outside this exercise.
 
 ## Local development
 
