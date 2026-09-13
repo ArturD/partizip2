@@ -9,14 +9,15 @@ const json = (data: unknown, status = 200) => Response.json(data, { status, head
 async function api(request: Request, env: Env, learner: string): Promise<Response> {
   const url = new URL(request.url);
   if (request.method === 'GET' && url.pathname === '/api/verbs') {
-    return json(verbs.map(({ participle, ...verb }) => verb));
+    return json(verbs.map(({ participle, explanation, ...verb }) => verb));
   }
   if (request.method === 'GET' && url.pathname === '/api/common-errors') {
     const rows = await env.DB.prepare(commonErrorsQuery).bind(learner).all<{ verb_id: string }>();
     return json(rows.results.flatMap(row => {
       const verb = verbs.find(verb => verb.id === row.verb_id);
       if (!verb) return [];
-      return [verb];
+      const { explanation, ...prompt } = verb;
+      return [prompt];
     }));
   }
   if (request.method === 'POST' && url.pathname === '/api/attempts') {
@@ -46,7 +47,8 @@ async function api(request: Request, env: Env, learner: string): Promise<Respons
       .bind(body.id, learner, verb.id, verb.tier, verb.type, body.answer, verb.participle, result, new Date().toISOString(), mode).run();
     const saved = await env.DB.prepare('SELECT id, verb_id, answer, expected, result, answered_at, practice_mode FROM attempts WHERE id = ? AND learner_id = ?').bind(body.id, learner).first();
     if (!saved) return json({ error: 'Attempt ID conflict. Reload and try again.' }, 409);
-    return json(saved);
+    // Use the saved verb for idempotent retries, not a possibly changed request body.
+    return json({ ...saved, explanation: verbs.find(v => v.id === saved.verb_id)?.explanation ?? '' });
   }
   if (request.method === 'GET' && ['/api/progress', '/api/trends'].includes(url.pathname)) {
     const tier = url.searchParams.get('tier') || '', type = url.searchParams.get('type') || '';

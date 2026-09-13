@@ -1,4 +1,4 @@
 # Project workflow
 
-- Commit completed, verified changes to Git by default, as requested by the user.
-- Do not push or deploy unless requested.
+- Make changes on the `dev` branch; commit and push completed, verified changes to `origin/dev` by default, as requested by the user.
+- Do not merge into `master` or deploy unless requested.

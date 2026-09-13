@@ -5,13 +5,14 @@ const initial = await fetch(`${base}/api/verbs`);
 assert.equal(initial.status, 200);
 const cookie = initial.headers.get('set-cookie').split(';')[0];
 const verbs = await initial.json();
-assert.equal(verbs.length, 110); assert.ok(!('participle' in verbs[0]));
+assert.equal(verbs.length, 110); assert.ok(!('participle' in verbs[0])); assert.ok(!('explanation' in verbs[0]));
 async function send(answer, id = crypto.randomUUID(), origin = base, mode = 'standard') {
   const response = await fetch(`${base}/api/attempts`, { method: 'POST', headers: { Cookie: cookie, Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ id, verbId: 'essen', answer, mode }) });
   return { response, body: await response.json() };
 }
 const id = crypto.randomUUID();
 const correct = await send('gegessen', id); assert.equal(correct.body.result, 'correct');
+assert.match(correct.body.explanation, /gegessen/);
 assert.match(correct.body.answered_at, /^\d{4}-\d\d-\d\dT.*\.\d{3}Z$/);
 assert.deepEqual((await send('gegessen', id)).body, correct.body);
 assert.equal((await send('gegesen')).body.result, 'typo');
@@ -33,6 +34,7 @@ const get = async path => (await fetch(base + path, { headers: { Cookie: cookie 
 const errors = await get('/api/common-errors');
 assert.deepEqual(errors.map(verb => verb.id), ['essen']);
 assert.equal(errors[0].participle, 'gegessen');
+assert.ok(!('explanation' in errors[0]));
 const targetedId = crypto.randomUUID();
 const targeted = await send('gegessen', targetedId, base, 'errors');
 assert.equal(targeted.body.practice_mode, 'errors');

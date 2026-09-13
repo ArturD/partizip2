@@ -1,8 +1,9 @@
+import { explanations } from './explanations.ts';
 export type Tier = 'essential' | 'common' | 'extended';
 
 export interface Verb {
 
-  id: string; infinitive: string; participle: string; english: string;
+  id: string; infinitive: string; participle: string; english: string; explanation: string;
 
   tier: Tier; type: 'regular' | 'irregular'; subtype: 'weak' | 'strong' | 'mixed' | 'suppletive';
 
@@ -22,7 +23,7 @@ function group(tier: Tier, entries: Entry[]): Verb[] {
 
   return entries.map(([id, participle, english, subtype, separable]) => ({
 
-    id, infinitive: id, participle, english, tier,
+    id, infinitive: id, participle, english, tier, explanation: explanations[id],
 
     type: subtype === 'weak' ? 'regular' : 'irregular', subtype, separable,
 

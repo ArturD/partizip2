@@ -25,7 +25,7 @@ for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo'
       calls.push(path);
       return path === '/api/verbs' || path === '/api/common-errors'
         ? [{ id: 'essen', infinitive: 'essen', english: 'eat', tier: 'essential', type: 'irregular', subtype: 'strong', participle: 'gegessen' }]
-        : { result, expected: 'gehört' };
+        : { result, expected: 'gehört', explanation: 'hören → gehört: regular ge- + stem + -t.' };
     },
   });
   await Promise.resolve();
@@ -40,11 +40,15 @@ for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo'
     assert.equal(element('answer').value, 'my draft');
     assert.equal(calls.length, 1); // Toggling makes no requests or logged attempts.
   }
+  assert.equal(element('explanation-panel').hidden, true);
+  assert.equal(element('explanation').textContent, '');
   const submit = async (value: string) => {
     element('answer').value = value;
     await element('answer-form').handlers.get('submit')({ preventDefault() {} });
   };
   await submit(result === 'correct' ? 'gegessen' : 'incorrect');
+  assert.equal(element('explanation-panel').hidden, false);
+  assert.match(element('explanation').textContent, /regular/);
   if (result !== 'correct') {
     assert.equal(element('next').hidden, true);
     assert.equal(element('tier').disabled, true);
@@ -54,6 +58,8 @@ for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo'
     assert.equal(element('next').hidden, true);
     assert.equal(element('tier').disabled, true);
     await submit(' GEHOERT ');
+    assert.equal(element('explanation-panel').hidden, false);
+    assert.match(element('explanation').textContent, /regular/);
   }
   assert.equal(element('next').hidden, false);
   assert.equal(element('tier').disabled, false);
@@ -61,6 +67,8 @@ for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo'
   assert.equal(calls.filter(path => path === '/api/attempts').length, 1);
   element('next').handlers.get('click')();
   assert.equal(element('answer').readOnly, false);
+  assert.equal(element('explanation-panel').hidden, true);
+  assert.equal(element('explanation').textContent, '');
   assert.equal(element('check').textContent, 'Check answer ↵');
   if (mode === 'errors') {
     assert.equal(element('model-answer-panel').hidden, true);

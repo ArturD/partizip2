@@ -24,6 +24,7 @@ function draw() {
   current = deck.pop(); attemptId = crypto.randomUUID(); pendingAnswer = undefined;
   answer.value = ''; answer.disabled = !current; answer.readOnly = false; check.disabled = !current; check.hidden = false; next.hidden = true; feedback.textContent = ''; feedback.className = '';
   answer.setCustomValidity(''); check.textContent = 'Check answer ↵';
+  element('explanation').textContent = ''; element('explanation-panel').hidden = true;
   element('word').textContent = current?.infinitive || 'No verbs yet';
   element('meaning').textContent = current?.english || (mode === 'errors' ? 'No common errors in this selection. Try another filter or do some normal practice first.' : 'Choose another tier or type to keep practicing.');
   element('tag').textContent = current ? `${current.tier} · ${current.subtype}${current.separable ? ' · separable' : ''}` : 'Empty practice set';
@@ -51,8 +52,10 @@ element<HTMLFormElement>('answer-form').addEventListener('submit', async event =
   check.disabled = true; answer.readOnly = true; tier.disabled = type.disabled = true;
   feedback.className = ''; feedback.textContent = 'Saving your answer…';
   try {
-    const saved = await api<{ result: string; expected: string }>('/api/attempts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, verbId: current.id, answer: pendingAnswer, mode }) });
+    const saved = await api<{ result: string; expected: string; explanation?: string }>('/api/attempts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, verbId: current.id, answer: pendingAnswer, mode }) });
     feedback.className = saved.result; feedback.textContent = `${labels[saved.result]}. ${current.infinitive} → ${saved.expected}`;
+    element('explanation').textContent = saved.explanation ?? '';
+    element('explanation-panel').hidden = !saved.explanation;
     if (saved.result !== 'correct') {
       correction = saved.expected;
       feedback.textContent += '. Type the correct form below to continue.';

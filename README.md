@@ -100,3 +100,13 @@ The Common errors tab selects up to 20 verbs from each learner's last five norma
 Apply migration `0002_practice_mode.sql` locally with `pnpm db:local` and in production with `pnpm db:production` before deploying. Existing attempts default to normal practice. Progress defaults to normal-only for history, totals and both graphs; use Practice included to see targeted-only or all attempts. Lesson boundaries are calculated within the chosen mode, before tier/type filters.
 
 Common-errors practice displays the canonical participle by default for copying. Select “Hide the answer for recall practice” to conceal it; the choice lasts for the current page visit. The answer field remains empty so the learner must type it. Normal practice still withholds the answer until submission.
+
+## Answer explanations
+
+Every verb has a short English learning note in `src/data/explanations.ts`, attached to the vocabulary entry. Regular notes show the actual stem/prefix/ending breakdown; irregular notes highlight vowel changes, spelling, or contrasts with related verbs. Notes appear after a saved answer in both modes, stay visible while retyping a correction, and clear on the next word. Prompt endpoints withhold explanations so they do not reveal the answer prematurely. These are editorial content, not database records; no migration is required.
+
+The notes are general learning aids, informed by recurring error patterns rather than personalized claims. Raw production answers and frequencies are not stored in this repository. Grammar references: [Goethe-Institut A1 grammar overview](https://lernen.goethe.de/deutschonline/A1/PDF/DE/deutschonline_Redemittel_und_Grammatik_1-18.pdf), [Lingolia: Partizip I und II](https://deutsch.lingolia.com/de/grammatik/verben/partizipien), and [Duden: liegen](https://www.duden.de/rechtschreibung/liegen_lehnen_ruhen).
+
+## Development workflow
+
+Work on `dev`, commit verified changes and push to `origin/dev`. Do not merge into `master` or deploy without an explicit request.
