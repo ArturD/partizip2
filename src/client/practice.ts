@@ -27,7 +27,7 @@ function draw() {
   element('explanation').textContent = ''; element('explanation-panel').hidden = true;
   element('word').textContent = current?.infinitive || 'No verbs yet';
   element('meaning').textContent = current?.english || (mode === 'errors' ? 'No common errors in this selection. Try another filter or do some normal practice first.' : 'Choose another tier or type to keep practicing.');
-  element('tag').textContent = current ? `${current.tier} · ${current.subtype}${current.separable ? ' · separable' : ''}` : 'Empty practice set';
+  element('tag').textContent = current ? `${current.type === 'regular' ? 'Regular' : 'Irregular'} (${current.subtype}) · ${current.tier}${current.separable ? ' · separable' : ''}` : 'Empty practice set';
   element('counter').textContent = current ? `${deck.length + 1} left in this round` : '0 words';
   updateModelAnswer();
   if (current) answer.focus();

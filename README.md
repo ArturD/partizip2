@@ -110,3 +110,11 @@ The notes are general learning aids, informed by recurring error patterns rather
 ## Development workflow
 
 Work on `dev`, commit verified changes and push to `origin/dev`. Do not merge into `master` or deploy without an explicit request.
+
+## Vocabulary classification audit
+
+Reviewed all 110 entries and their notes on 2026-09-13: 55 regular (weak) and 55 irregular. Practice cards explicitly show Regular or Irregular, with the subtype, in both modes and throughout answer feedback. Classification describes the verb's conjugation, not just a vowel change in its participle. Mixed verbs (bringen, denken, kennen, rennen and mitbringen) count as irregular despite ending in -t. Strong is the broad teaching category, including exceptional forms such as gehen, stehen and tun; sein is marked suppletive. The subtype is a learning aid, not a complete historical classification.
+
+The audit checked weak stem/ending breakdowns, strong and mixed forms, prefix placement, and meaning-dependent separability. In particular, vorbereiten is separable yet has no added ge-; wiederholen (repeat), übersetzen (translate) and unterschreiben (sign) are inseparable. Werden uses geworden for “become”, rather than passive worden. Existing type classifications and stored progress remain valid; no database migration is needed.
+
+References: [Deutschkurse Passau, strong and mixed verb tables (pages 6–7)](https://deutschkurse-passau.de/JM/images/stories/LISTEN/listen-tabellen_a1-a2.pdf), [Lingolia, verb categories](https://deutsch.lingolia.com/en/grammar/verbs), [Duden, tun](https://www.duden.de/rechtschreibung/tun_handeln), and [Duden, vorbereiten](https://www.duden.de/rechtschreibung/vorbereiten). The explanation comparisons describe individual forms; they are not universal sound-change rules.

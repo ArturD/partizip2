@@ -6,7 +6,10 @@ import { runInNewContext } from 'node:vm';
 import { answersMatch } from '../src/client/answers.ts';
 
 // Run the actual client handlers with DOM stand-ins and a mocked API.
-for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo', 'correct']) test(`${mode}/${result}: correction flow preserves one logged attempt`, async () => {
+for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo', 'correct']) test(`${type}/${mode}/${result}: correction flow preserves one logged attempt`, async () => {
+  const verb = type === 'regular'
+    ? { id: 'hören', infinitive: 'hören', english: 'hear', participle: 'gehört' }
+    : { id: 'essen', infinitive: 'essen', english: 'eat', participle: 'gegessen' };
   const elements = new Map();
   const calls: string[] = [];
   const element = (id: string) => {
@@ -24,13 +27,15 @@ for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo'
     api: async (path: string) => {
       calls.push(path);
       return path === '/api/verbs' || path === '/api/common-errors'
-        ? [{ id: 'essen', infinitive: 'essen', english: 'eat', tier: 'essential', type: 'irregular', subtype: 'strong', participle: 'gegessen' }]
+        ? [{ ...verb, tier: 'essential', type, subtype: type === 'regular' ? 'weak' : 'strong' }]
         : { result, expected: 'gehört', explanation: 'hören → gehört: regular ge- + stem + -t.' };
     },
   });
   await Promise.resolve();
+  const expectedTag = type === 'regular' ? 'Regular (weak) · essential' : 'Irregular (strong) · essential';
+  assert.equal(element('tag').textContent, expectedTag);
   if (mode === 'errors') {
-    assert.equal(element('model-answer').textContent, 'gegessen');
+    assert.equal(element('model-answer').textContent, verb.participle);
     assert.equal(element('model-answer-panel').hidden, false);
     assert.equal(element('answer').value, '');
     element('answer').value = 'my draft';
@@ -47,6 +52,7 @@ for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo'
     await element('answer-form').handlers.get('submit')({ preventDefault() {} });
   };
   await submit(result === 'correct' ? 'gegessen' : 'incorrect');
+  assert.equal(element('tag').textContent, expectedTag);
   assert.equal(element('explanation-panel').hidden, false);
   assert.match(element('explanation').textContent, /regular/);
   if (result !== 'correct') {
@@ -58,6 +64,7 @@ for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo'
     assert.equal(element('next').hidden, true);
     assert.equal(element('tier').disabled, true);
     await submit(' GEHOERT ');
+    assert.equal(element('tag').textContent, expectedTag);
     assert.equal(element('explanation-panel').hidden, false);
     assert.match(element('explanation').textContent, /regular/);
   }

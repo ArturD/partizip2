@@ -2,8 +2,8 @@
 // Comparisons are memory aids for these verbs, not universal spelling rules.
 export const explanations: Record<string, string> = {
   beginnen: 'beginnen → begonnen changes i to o and ends in -en, like gewinnen → gewonnen; the inseparable be- prefix means no extra ge-.',
-  bekommen: 'bekommen → bekommen stays unchanged: compare kommen → gekommen, but the inseparable be- prefix replaces the need for ge-.',
-  essen: 'essen → gegessen keeps the double s and ends in -en; remember the whole form, including the extra g before essen.',
+  bekommen: 'bekommen → bekommen stays unchanged: compare kommen → gekommen, but the inseparable be- prefix blocks ge-.',
+  essen: 'essen → gegessen keeps the double s and ends in -en; its special participle stem is gess-, giving ge- + gess- + -en.',
   fahren: 'fahren → gefahren keeps a but takes -en, like tragen → getragen and schlafen → geschlafen; an unchanged vowel does not make a verb regular.',
   gehen: 'gehen → gegangen has the special stem gang-; learn gegangen as a whole rather than adding -t to geh-.',
   lesen: 'lesen → gelesen keeps e and a single s, unlike essen → gegessen with double s.',
@@ -39,7 +39,7 @@ export const explanations: Record<string, string> = {
   schwimmen: 'schwimmen → geschwommen changes i to o and keeps double m and -en; compare gewinnen → gewonnen.',
   fliegen: 'fliegen → geflogen changes ie to o and ends in -en, like ziehen → gezogen and bieten → geboten.',
   singen: 'singen → gesungen changes i to u and ends in -en, like trinken → getrunken and finden → gefunden.',
-  gewinnen: 'gewinnen → gewonnen changes i to o and keeps double n, like beginnen → begonnen; do not add another ge- to the existing prefix.',
+  gewinnen: 'gewinnen → gewonnen changes i to o and keeps double n, like beginnen → begonnen; the unstressed inseparable ge- prefix means no additional ge-.',
   ziehen: 'ziehen → gezogen changes ie to o and h to g; compare fliegen → geflogen for the same vowel change.',
   fallen: 'fallen → gefallen keeps a, double l and -en, just as halten → gehalten keeps a and -en.',
   halten: 'halten → gehalten keeps a and the strong -en ending; the t is part of the stem, not a regular participle ending.',
