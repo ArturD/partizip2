@@ -24,6 +24,7 @@ function draw() {
   current = deck.pop(); attemptId = crypto.randomUUID(); pendingAnswer = undefined;
   answer.value = ''; answer.disabled = !current; answer.readOnly = false; check.disabled = !current; check.hidden = false; next.hidden = true; feedback.textContent = ''; feedback.className = '';
   answer.setCustomValidity(''); check.textContent = 'Check answer ↵';
+  element('submitted-answer').textContent = ''; element('submitted-answer').hidden = true;
   element('explanation-heading').textContent = 'Remember this';
   element('explanation').textContent = ''; element('explanation-panel').hidden = true;
   element('word').textContent = current?.infinitive || 'No verbs yet';
@@ -59,6 +60,8 @@ element<HTMLFormElement>('answer-form').addEventListener('submit', async event =
     element('explanation').textContent = saved.explanation ?? '';
     element('explanation-panel').hidden = false;
     if (saved.result !== 'correct') {
+      element('submitted-answer').textContent = `You typed: “${pendingAnswer}” · Correct form: ${saved.expected}`;
+      element('submitted-answer').hidden = false;
       correction = saved.expected;
       feedback.textContent += '. Type the correct form below to continue.';
       answer.value = ''; answer.readOnly = false; check.disabled = false;

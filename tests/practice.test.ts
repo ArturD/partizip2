@@ -48,6 +48,7 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
   }
   assert.equal(element('explanation-panel').hidden, true);
   assert.equal(element('explanation').textContent, '');
+  assert.equal(element('submitted-answer').hidden, true);
   const submit = async (value: string) => {
     element('answer').value = value;
     await element('answer-form').handlers.get('submit')({ preventDefault() {} });
@@ -56,7 +57,10 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
   assert.equal(element('explanation-heading').textContent, expectedTag);
   assert.equal(element('explanation-panel').hidden, false);
   assert.match(element('explanation').textContent, /regular/);
+  if (result === 'correct') assert.equal(element('submitted-answer').hidden, true);
   if (result !== 'correct') {
+    assert.equal(element('submitted-answer').hidden, false);
+    assert.equal(element('submitted-answer').textContent, 'You typed: “incorrect” · Correct form: gehört');
     assert.equal(element('next').hidden, true);
     assert.equal(element('tier').disabled, true);
     assert.equal(element('type').disabled, true);
@@ -64,7 +68,9 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
     await submit('gegesen');
     assert.equal(element('next').hidden, true);
     assert.equal(element('tier').disabled, true);
+    assert.equal(element('submitted-answer').textContent, 'You typed: “incorrect” · Correct form: gehört');
     await submit(' GEHOERT ');
+    assert.equal(element('submitted-answer').textContent, 'You typed: “incorrect” · Correct form: gehört');
     assert.equal(element('explanation-heading').textContent, expectedTag);
     assert.equal(element('explanation-panel').hidden, false);
     assert.match(element('explanation').textContent, /regular/);
@@ -74,6 +80,8 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
   assert.equal(element('answer').readOnly, true);
   assert.equal(calls.filter(path => path === '/api/attempts').length, 1);
   element('next').handlers.get('click')();
+  assert.equal(element('submitted-answer').hidden, true);
+  assert.equal(element('submitted-answer').textContent, '');
   assert.equal(element('answer').readOnly, false);
   assert.equal(element('explanation-panel').hidden, true);
   assert.equal(element('explanation').textContent, '');
