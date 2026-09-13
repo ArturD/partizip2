@@ -32,8 +32,9 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
     },
   });
   await Promise.resolve();
-  const expectedTag = type === 'regular' ? 'Regular (weak) · essential' : 'Irregular (strong) · essential';
-  assert.equal(element('tag').textContent, expectedTag);
+  const expectedTag = type === 'regular' ? 'Regular (weak)' : 'Irregular (strong)';
+  assert.equal(element('tag').textContent, 'essential');
+  assert.equal(element('explanation-heading').textContent, 'Remember this');
   if (mode === 'errors') {
     assert.equal(element('model-answer').textContent, verb.participle);
     assert.equal(element('model-answer-panel').hidden, false);
@@ -52,7 +53,7 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
     await element('answer-form').handlers.get('submit')({ preventDefault() {} });
   };
   await submit(result === 'correct' ? 'gegessen' : 'incorrect');
-  assert.equal(element('tag').textContent, expectedTag);
+  assert.equal(element('explanation-heading').textContent, expectedTag);
   assert.equal(element('explanation-panel').hidden, false);
   assert.match(element('explanation').textContent, /regular/);
   if (result !== 'correct') {
@@ -64,7 +65,7 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
     assert.equal(element('next').hidden, true);
     assert.equal(element('tier').disabled, true);
     await submit(' GEHOERT ');
-    assert.equal(element('tag').textContent, expectedTag);
+    assert.equal(element('explanation-heading').textContent, expectedTag);
     assert.equal(element('explanation-panel').hidden, false);
     assert.match(element('explanation').textContent, /regular/);
   }
@@ -77,6 +78,8 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
   assert.equal(element('explanation-panel').hidden, true);
   assert.equal(element('explanation').textContent, '');
   assert.equal(element('check').textContent, 'Check answer ↵');
+  assert.equal(element('explanation-heading').textContent, 'Remember this');
+  assert.equal(element('tag').textContent, 'essential');
   if (mode === 'errors') {
     assert.equal(element('model-answer-panel').hidden, true);
     element('hide-answer').checked = false;
