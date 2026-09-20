@@ -15,7 +15,7 @@ function render() {
   element('article-note').textContent = ''; element('article-note').hidden = true;
   element('article-word').textContent = current.noun;
   element('article-meaning').textContent = current.english;
-  element('article-step').textContent = `${step + 1}/4 · ${labels[steps.indexOf(order[step])]}`;
+  element('article-step').textContent = `${step + 1}/4 · ${roundDifficulty === 'hard' && step > 0 ? 'Choose the article' : labels[steps.indexOf(order[step])]}`;
   element('article-prompt').textContent = step === 0 ? `Choose the nominative article for ${current.noun}.` : current.sentences[order[step]].replace('_', '___');
   choices.replaceChildren();
   for (const article of step === 0 ? ['der','die','das'] : ['der','die','das','den','dem','des']) {
@@ -64,6 +64,7 @@ async function answer(value: string) {
   feedback.textContent = 'Saving…';
   try {
     saved = await api<Saved>('/api/articles/attempts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, roundId, nounId: current.id, version: current.version, question: order[step], difficulty: roundDifficulty, answer: pending }) });
+    element('article-step').textContent = `${step + 1}/4 · ${labels[steps.indexOf(order[step])]}`;
     highlight(saved.answer);
     feedback.textContent = `${saved.correct ? 'Correct' : 'Wrong'}. You chose “${saved.answer}”; correct: ${saved.expected}.${saved.correct ? '' : ' Select the correct article to continue.'}`;
     element('article-note').textContent = saved.explanation; element('article-note').hidden = false;

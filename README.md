@@ -131,6 +131,6 @@ Grammar reference: [Goethe-Institut, German grammar and case tables](https://www
 
 ### Article difficulty
 
-Easy uses nominative → accusative → dative → genitive. Hard keeps nominative first and independently shuffles the remaining three cases each round; a random shuffle can occasionally match the easy order. Case labels remain visible. Difficulty is locked once answering begins and stored separately from practice mode. The server requires nominative before any hard-mode case and rejects changing difficulty within a round.
+Easy uses nominative → accusative → dative → genitive. Hard keeps nominative first and independently shuffles the remaining three cases each round; a random shuffle can occasionally match the easy order. In Hard mode, the three sentence case labels stay hidden until an answer is saved, then appear for both correct and wrong answers and remain during correction. The initial gender/nominative prompt and all Easy-mode case labels stay visible. Difficulty is locked once answering begins and stored separately from practice mode. The server requires nominative before any hard-mode case and rejects changing difficulty within a round.
 
 Apply `0004_article_difficulty.sql` locally before testing and in production before the next deployment. Existing article attempts become Easy automatically. The article progress report defaults to Easy and offers Hard, with four separate daily charts (nominative/gender, accusative, dative, genitive). Tier and difficulty filters apply to both totals and graphs.

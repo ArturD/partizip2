@@ -44,7 +44,16 @@ for (const difficulty of ['easy','hard']) test(`${difficulty}: gender must be co
   for (const [question, answer] of cases) {
     element('article-next').handlers.get('click')();
     assert.ok(element('choices').children.every((b: any) => !b.className));
-    await choose(answer);
+    if (difficulty === 'hard') assert.match(element('article-step').textContent,/Choose the article/);
+    else assert.ok(element('article-step').textContent.toLowerCase().includes(question));
+    if (question === 'dative') {
+      await choose('das');
+      assert.ok(element('article-step').textContent.toLowerCase().includes(question));
+      assert.equal(element('article-next').hidden,true);
+      const count = attempts.length;
+      await choose(answer);
+      assert.equal(attempts.length,count);
+    } else await choose(answer);
     assert.equal(element('choices').children.find((b: any) => b.value === answer).className,'article-correct');
     assert.equal(attempts.at(-1).question,question);
     assert.equal(attempts.at(-1).difficulty,difficulty);
