@@ -9,3 +9,7 @@
 .explanation{margin-top:18px;padding:16px 18px;background:#eef3f8;border-left:4px solid #236db0;border-radius:7px}.explanation h3{font-size:16px;margin:0 0 8px}.explanation p{margin:0;overflow-wrap:anywhere}
 
 .submitted-answer { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.article-choices { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
+.article-choices button { min-width:72px; }
+nav { flex-wrap:wrap; }

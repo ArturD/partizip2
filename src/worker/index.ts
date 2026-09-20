@@ -1,3 +1,4 @@
+import { articlesApi } from '../features/articles/api';
 import { lessonQuery } from './trends';
 import { commonErrorsQuery } from './common-errors';
 import { verbs } from '../data/verbs';
@@ -8,6 +9,7 @@ const json = (data: unknown, status = 200) => Response.json(data, { status, head
 
 async function api(request: Request, env: Env, learner: string): Promise<Response> {
   const url = new URL(request.url);
+  if (url.pathname.startsWith('/api/articles/')) return articlesApi(request, env.DB, learner);
   if (request.method === 'GET' && url.pathname === '/api/verbs') {
     return json(verbs.map(({ participle, explanation, ...verb }) => verb));
   }
