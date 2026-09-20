@@ -1,12 +1,12 @@
 import { api, element } from './api.js';
 import { chart } from './chart.js';
 interface Row { question: string; total: number; correct: number }
-interface Day { day: string; total: number; correct: number }
+interface Day { question: string; day: string; total: number; correct: number }
 let generation = 0;
 async function load() {
   const request = ++generation;
   element('status').textContent = 'Loading…';
-  const params = new URLSearchParams({ tier: element<HTMLSelectElement>('article-tier').value, question: element<HTMLSelectElement>('article-question').value });
+  const params = new URLSearchParams({ tier: element<HTMLSelectElement>('article-tier').value, difficulty: element<HTMLSelectElement>('article-difficulty').value });
   try {
     const data = await api<{ summary: Row[]; days: Day[] }>(`/api/articles/progress?${params}`);
     if (request !== generation) return;
@@ -18,14 +18,14 @@ async function load() {
     }
     element('status').textContent = total ? `Overall: ${Math.round(correct / total * 100)}% from ${total} answers.` : 'No article practice yet.';
     const today = new Date(); today.setUTCHours(0,0,0,0);
-    chart(element('daily'), Array.from({ length: 90 }, (_, i) => {
+    for (const question of ['gender','accusative','dative','genitive']) chart(element(`daily-${question}`), Array.from({ length: 90 }, (_, i) => {
       const x = today.getTime() - (89 - i) * 86400000, label = new Date(x).toISOString().slice(0,10);
-      const day = data.days.find(d => d.day === label);
+      const day = data.days.find(d => d.day === label && d.question === question);
       return { x, label, value: day ? day.correct / day.total * 100 : null, detail: day ? `${day.correct}/${day.total} correct` : 'No practice' };
-    }), 'Daily article accuracy');
+    }), `Daily ${question === 'gender' ? 'nominative' : question} accuracy`);
   } catch (error) { if (request === generation) element('status').textContent = error instanceof Error ? error.message : 'Unable to load progress.'; }
 }
-for (const id of ['article-tier','article-question']) element(id).addEventListener('change', () => void load());
+for (const id of ['article-tier','article-difficulty']) element(id).addEventListener('change', () => void load());
 element('refresh').addEventListener('click', () => void load());
 document.addEventListener('visibilitychange', () => { if (!document.hidden) void load(); });
 void load();

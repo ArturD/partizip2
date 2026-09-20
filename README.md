@@ -128,3 +128,9 @@ Content lives in `src/features/articles/nouns.ts`: 30 essential singular nouns (
 `0003_articles.sql` creates a separate `article_attempts` table with unique learner/round/question keys. Apply with `pnpm db:local` for local use. Before a future production deployment, apply `pnpm db:production`; this feature does not alter verb history. Reports show accuracy by question and daily accuracy for the last 90 UTC days, with tier and question filters. All article answers are currently standard practice. Article attempts never enter the Partizip reports.
 
 Grammar reference: [Goethe-Institut, German grammar and case tables](https://www.goethe.de/ins/de/de/m/prf/grm.html). Tiers describe editorial importance, not measured corpus frequency. Content changes that affect answers should increment the noun's version. The server rejects stale versions and out-of-order questions; the browser handles unlogged correction gating.
+
+### Article difficulty
+
+Easy uses nominative → accusative → dative → genitive. Hard keeps nominative first and independently shuffles the remaining three cases each round; a random shuffle can occasionally match the easy order. Case labels remain visible. Difficulty is locked once answering begins and stored separately from practice mode. The server requires nominative before any hard-mode case and rejects changing difficulty within a round.
+
+Apply `0004_article_difficulty.sql` locally before testing and in production before the next deployment. Existing article attempts become Easy automatically. The article progress report defaults to Easy and offers Hard, with four separate daily charts (nominative/gender, accusative, dative, genitive). Tier and difficulty filters apply to both totals and graphs.

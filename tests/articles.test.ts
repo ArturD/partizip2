@@ -20,6 +20,9 @@ test('article content has 30 unique nouns, balanced genders and three complete s
 test('article API enforces sequence, saves immutable retries and isolates learners and verb history', async () => {
   const sqlite = new DatabaseSync(':memory:');
   for (const file of ['0001_attempts.sql','0002_practice_mode.sql','0003_articles.sql']) sqlite.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url),'utf8'));
+  sqlite.exec("INSERT INTO article_attempts VALUES ('legacy','legacy','legacy','hund',1,'essential','gender','der','der',1,'2026-09-20','standard')");
+  sqlite.exec(readFileSync(new URL('../migrations/0004_article_difficulty.sql', import.meta.url),'utf8'));
+  assert.equal(sqlite.prepare("SELECT difficulty FROM article_attempts WHERE id = 'legacy'").get()?.difficulty,'easy');
   const db = {
     prepare(sql: string) { let values: any[] = []; return {
       bind(...args: any[]) { values = args; return this; },
@@ -45,6 +48,16 @@ test('article API enforces sequence, saves immutable retries and isolates learne
     assert.deepEqual(await (await post({...initial, answer:'der'})).json(),saved);
     assert.deepEqual(await (await post({...make(),answer:'der'})).json(),saved);
     for (const [question,answer] of [['accusative','den'],['dative','dem'],['genitive','des']]) assert.equal((await post(make(question,answer))).status,200);
+    const hardRound = crypto.randomUUID();
+    const hard = (q: string, a: string) => ({...make(q,a),roundId:hardRound,difficulty:'hard'});
+    assert.equal((await post(hard('genitive','des'))).status,409);
+    assert.equal((await post(hard('gender','der'))).status,200);
+    assert.equal((await post({...hard('genitive','des'),difficulty:'easy'})).status,409);
+    for (const [q,a] of [['genitive','des'],['dative','dem'],['accusative','den']]) assert.equal((await post(hard(q,a))).status,200);
+    const hardProgress = await (await get('progress?difficulty=hard')).json() as any;
+    assert.equal(hardProgress.summary.reduce((n: number,r: any) => n+r.total,0),4);
+    assert.equal(hardProgress.days.length,4);
+    assert.equal((await get('progress?difficulty=invalid')).status,400);
     const progress = await (await get('progress')).json() as any;
     assert.equal(progress.summary.reduce((n: number,r: any) => n+r.total,0),4);
     assert.equal(progress.summary.reduce((n: number,r: any) => n+r.correct,0),3);
