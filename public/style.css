@@ -16,3 +16,11 @@ nav { flex-wrap:wrap; }
 
 .article-choices button.article-correct { background:#dcfce7; color:#14532d; border:2px solid #15803d; opacity:1; }
 .article-choices button.article-wrong { background:#fee2e2; color:#7f1d1d; border:2px solid #b91c1c; opacity:1; }
+
+.navigation { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.section-nav { gap:8px; }
+.section-nav a { padding:8px 14px; border-radius:8px; font-weight:650; }
+.section-nav a[aria-current] { background:#142e44; color:white; border-bottom:0; }
+.page-nav { gap:20px; padding-left:14px; border-top:1px solid #d6dfe7; font-size:14px; }
+.page-nav a { padding:8px 0; }
+@media(max-width:600px) { .navigation { width:100%; } .section-nav a { padding:8px 10px; } .page-nav { padding-left:10px; gap:18px; } }
