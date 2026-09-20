@@ -1,3 +1,4 @@
+import { articleLessonQuery } from './trends.ts';
 import { nouns, steps, articles, solution, type Question } from './nouns.ts';
 const json = (data: unknown, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -13,10 +14,11 @@ export async function articlesApi(request: Request, db: D1Database, learner: str
     const where = "learner_id = ? AND difficulty = ? AND (? = '' OR tier = ?) AND (? = '' OR question = ?)";
     const bindings = [learner, difficulty, tier, tier, question, question];
     const results = await db.batch([
+      db.prepare(articleLessonQuery).bind(...bindings),
       db.prepare(`SELECT question, COUNT(*) total, SUM(correct) correct FROM article_attempts WHERE ${where} GROUP BY question`).bind(...bindings),
       db.prepare(`SELECT question, substr(answered_at,1,10) day, COUNT(*) total, SUM(correct) correct FROM article_attempts WHERE ${where} AND answered_at >= ? GROUP BY day, question ORDER BY day, question`).bind(...bindings, new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate() - 89)).toISOString()),
     ]);
-    return json({ summary: results[0].results, days: results[1].results });
+    return json({ lesson: results[0].results, summary: results[1].results, days: results[2].results });
   }
   if (request.method !== 'POST' || url.pathname !== '/api/articles/attempts') return json({ error: 'Route not found.' }, 404);
   if (request.headers.get('Origin') !== url.origin) return json({ error: 'Invalid request origin.' }, 403);
