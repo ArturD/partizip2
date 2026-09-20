@@ -23,12 +23,15 @@ test('gender must be corrected before cases; corrections are unlogged and failed
     }
   });
   const flush = () => new Promise(resolve => setImmediate(resolve));
-  const choose = async (text: string) => { element('choices').children.find((b: any) => b.textContent === text).handlers.get('click')(); await flush(); };
+  const choose = async (text: string) => { element('choices').children.find((b: any) => b.value === text).handlers.get('click')(); await flush(); };
   await flush();
   assert.match(element('article-step').textContent,/Gender/);
   assert.deepEqual(element('choices').children.map((b: any) => b.textContent),['der','die','das']);
   await choose('die'); // Failed save.
+  assert.ok(element('choices').children.every((b: any) => !b.className));
   await choose('das'); // Retry must still submit die.
+  assert.equal(element('choices').children.find((b: any) => b.value === 'die').className,'article-wrong');
+  assert.equal(element('choices').children.find((b: any) => b.value === 'der').className,'article-correct');
   assert.equal(attempts[1].answer,'die'); assert.equal(attempts[1].id,attempts[0].id);
   assert.equal(element('article-next').hidden,true);
   await choose('das'); assert.equal(element('article-next').hidden,true);
@@ -36,7 +39,10 @@ test('gender must be corrected before cases; corrections are unlogged and failed
   assert.equal(attempts.length,2); // No correction requests.
   for (const [question, answer] of [['accusative','den'],['dative','dem'],['genitive','des']]) {
     element('article-next').handlers.get('click')();
-    await choose(answer); assert.equal(attempts.at(-1).question,question);
+    assert.ok(element('choices').children.every((b: any) => !b.className));
+    await choose(answer);
+    assert.equal(element('choices').children.find((b: any) => b.value === answer).className,'article-correct');
+    assert.equal(attempts.at(-1).question,question);
     assert.equal(element('article-next').hidden,false);
   }
   assert.equal(element('article-tier').disabled,false);

@@ -13,3 +13,6 @@
 .article-choices { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
 .article-choices button { min-width:72px; }
 nav { flex-wrap:wrap; }
+
+.article-choices button.article-correct { background:#dcfce7; color:#14532d; border:2px solid #15803d; opacity:1; }
+.article-choices button.article-wrong { background:#fee2e2; color:#7f1d1d; border:2px solid #b91c1c; opacity:1; }

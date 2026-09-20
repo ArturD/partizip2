@@ -17,7 +17,7 @@ function render() {
   element('article-prompt').textContent = step === 0 ? `Choose the nominative article for ${current.noun}.` : current.sentences[steps[step]].replace('_', '___');
   choices.replaceChildren();
   for (const article of step === 0 ? ['der','die','das'] : ['der','die','das','den','dem','des']) {
-    const button = document.createElement('button'); button.type = 'button'; button.textContent = article;
+    const button = document.createElement('button'); button.type = 'button'; button.value = article; button.textContent = article;
     button.addEventListener('click', () => void answer(article)); choices.append(button);
   }
   choices.querySelector('button')?.focus();
@@ -32,6 +32,16 @@ function start() {
   current = noun; roundId = crypto.randomUUID(); step = 0; render();
 }
 function lock(disabled: boolean) { for (const button of Array.from(choices.querySelectorAll('button'))) button.disabled = disabled; }
+function highlight(value: string) {
+  if (!saved) return;
+  for (const button of Array.from(choices.querySelectorAll('button'))) {
+    if (button.value === saved.expected) {
+      button.className = 'article-correct'; button.textContent = `${button.value} ✓ Correct`;
+    } else if (button.value === value) {
+      button.className = 'article-wrong'; button.textContent = `${button.value} ✕ Wrong`;
+    }
+  }
+}
 function complete() {
   lock(true); next.hidden = false; next.textContent = step === 3 ? 'Next noun →' : 'Next case →'; next.focus();
   if (step === 3) tier.disabled = false;
@@ -39,6 +49,7 @@ function complete() {
 async function answer(value: string) {
   if (busy) return;
   if (saved) {
+    highlight(value);
     if (value !== saved.expected) { feedback.textContent = `Try again: select ${saved.expected}. Your original answer was “${saved.answer}”.`; return; }
     feedback.textContent = `Correction complete. You originally chose “${saved.answer}”; correct: ${saved.expected}.`; complete(); return;
   }
@@ -46,6 +57,7 @@ async function answer(value: string) {
   feedback.textContent = 'Saving…';
   try {
     saved = await api<Saved>('/api/articles/attempts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, roundId, nounId: current.id, version: current.version, question: steps[step], answer: pending }) });
+    highlight(saved.answer);
     feedback.textContent = `${saved.correct ? 'Correct' : 'Wrong'}. You chose “${saved.answer}”; correct: ${saved.expected}.${saved.correct ? '' : ' Select the correct article to continue.'}`;
     element('article-note').textContent = saved.explanation; element('article-note').hidden = false;
     if (saved.correct) complete(); else { lock(false); choices.querySelector('button')?.focus(); }
