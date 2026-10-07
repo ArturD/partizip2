@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 import { answersMatch } from '../src/client/answers.ts';
 
 // Run the actual client handlers with DOM stand-ins and a mocked API.
-for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo', 'correct']) test(`${type}/${mode}/${result}: correction flow preserves one logged attempt`, async () => {
+for (const exercise of ['participle','preterite']) for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'errors']) for (const result of ['wrong', 'typo', 'correct']) test(`${exercise}/${type}/${mode}/${result}: correction flow preserves one logged attempt`, async () => {
   const verb = type === 'regular'
     ? { id: 'hören', infinitive: 'hören', english: 'hear', participle: 'gehört' }
     : { id: 'essen', infinitive: 'essen', english: 'eat', participle: 'gegessen' };
@@ -22,9 +22,11 @@ for (const type of ['regular', 'irregular']) for (const mode of ['standard', 'er
   };
   const source = readFileSync(new URL('../src/client/practice.ts', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '');
   runInNewContext(stripTypeScriptTypes(source), {
-    document: { body: { dataset: { mode } } }, element, answersMatch, crypto: { randomUUID: () => 'test-attempt' },
+    document: { body: { dataset: { mode, exercise } } }, element, answersMatch, crypto: { randomUUID: () => 'test-attempt' },
     labels: { wrong: 'Wrong', typo: 'Typo', correct: 'Correct' },
     api: async (path: string) => {
+      assert.ok(exercise === 'preterite' ? path.startsWith('/api/preterite/') : !path.startsWith('/api/preterite/'));
+      path = path.replace('/api/preterite/', '/api/');
       calls.push(path);
       return path === '/api/verbs' || path === '/api/common-errors'
         ? [{ ...verb, tier: 'essential', type, subtype: type === 'regular' ? 'weak' : 'strong' }]

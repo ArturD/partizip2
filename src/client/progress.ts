@@ -1,6 +1,8 @@
 import { api, element, labels } from './api.js';
 import { chart } from './chart.js';
 import { dailyTrend, smoothLesson, type LessonAnswer, type Day } from './trends.js';
+const isPreterite = document.body.dataset.exercise === 'preterite';
+const apiRoot = isPreterite ? '/api/preterite' : '/api';
 interface Data { summary: { total: number; correct: number; typo: number; wrong: number; practiced: number }; attempts: { verb_id: string; answer: string; expected: string; result: string; answered_at: string; practice_mode: string }[] }
 const tier = element<HTMLSelectElement>('tier'), type = element<HTMLSelectElement>('type');
 const mode = element<HTMLSelectElement>('mode');
@@ -15,7 +17,7 @@ async function loadTrends() {
   element('trend-status').textContent = 'Loading trends…';
   for (const id of ['lesson-chart', 'days-chart', 'lesson-insight', 'days-insight']) element(id).replaceChildren();
   try {
-    const data = await api<{ lesson: LessonAnswer[]; days: Day[]; today: string }>(`/api/trends?${new URLSearchParams({ mode: mode.value, tier: tier.value, type: type.value })}`);
+    const data = await api<{ lesson: LessonAnswer[]; days: Day[]; today: string }>(`${apiRoot}/trends?${new URLSearchParams({ mode: mode.value, tier: tier.value, type: type.value })}`);
     if (version !== trendGeneration) return;
     const smoothed = smoothLesson(data.lesson, n, method.value === 'ema' ? 'ema' : 'sma');
     const complete = smoothed.filter(point => point.accuracy !== null);
@@ -53,7 +55,7 @@ async function load() {
   const version = ++generation;
   element('status').textContent = 'Loading your progress…'; previous.disabled = more.disabled = true;
   try {
-    const data = await api<Data>(`/api/progress?${new URLSearchParams({ mode: mode.value, tier: tier.value, type: type.value, offset: String(offset) })}`);
+    const data = await api<Data>(`${apiRoot}/progress?${new URLSearchParams({ mode: mode.value, tier: tier.value, type: type.value, offset: String(offset) })}`);
     if (version !== generation) return;
     const s = data.summary;
     element('summary').replaceChildren();

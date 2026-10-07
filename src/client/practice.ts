@@ -1,5 +1,7 @@
 import { api, element, labels } from './api.js';
 import { answersMatch } from './answers.js';
+const isPreterite = document.body.dataset.exercise === 'preterite';
+const apiRoot = isPreterite ? '/api/preterite' : '/api';
 interface Verb { id: string; infinitive: string; english: string; tier: string; type: string; subtype: string; separable: boolean; participle?: string }
 const answer = element<HTMLInputElement>('answer'), check = element<HTMLButtonElement>('check'), next = element<HTMLButtonElement>('next');
 const tier = element<HTMLSelectElement>('tier'), type = element<HTMLSelectElement>('type'), feedback = element('feedback');
@@ -38,7 +40,7 @@ for (const select of [tier, type]) select.addEventListener('change', () => { if 
 next.addEventListener('click', draw);
 element<HTMLFormElement>('answer-form').addEventListener('submit', async event => {
   event.preventDefault(); if (!current || check.disabled) return;
-  if (!answer.value.trim()) { answer.setCustomValidity('Enter the Partizip II form.'); answer.reportValidity(); return; }
+  if (!answer.value.trim()) { answer.setCustomValidity(isPreterite ? 'Enter the Präteritum form for ich / er / sie / es.' : 'Enter the Partizip II form.'); answer.reportValidity(); return; }
   if (correction !== undefined) {
     if (!answersMatch(answer.value, correction)) {
       feedback.textContent = `Try again: type ${correction} to continue.`;
@@ -54,7 +56,7 @@ element<HTMLFormElement>('answer-form').addEventListener('submit', async event =
   check.disabled = true; answer.readOnly = true; tier.disabled = type.disabled = true;
   feedback.className = ''; feedback.textContent = 'Saving your answer…';
   try {
-    const saved = await api<{ result: string; expected: string; explanation?: string }>('/api/attempts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, verbId: current.id, answer: pendingAnswer, mode }) });
+    const saved = await api<{ result: string; expected: string; explanation?: string }>(`${apiRoot}/attempts`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attemptId, verbId: current.id, answer: pendingAnswer, mode }) });
     feedback.className = saved.result; feedback.textContent = `${labels[saved.result]}. ${current.infinitive} → ${saved.expected}`;
     element('explanation-heading').textContent = `${current.type === 'regular' ? 'Regular' : 'Irregular'} (${current.subtype})${current.separable ? ' · separable' : ''}`;
     element('explanation').textContent = saved.explanation ?? '';
@@ -75,4 +77,4 @@ element<HTMLFormElement>('answer-form').addEventListener('submit', async event =
   } finally { tier.disabled = type.disabled = correction !== undefined; }
 });
 answer.addEventListener('input', () => answer.setCustomValidity(''));
-api<Verb[]>(mode === 'errors' ? '/api/common-errors' : '/api/verbs').then(data => { verbs = data; draw(); }).catch(() => { element('word').textContent = 'Unable to load'; element('meaning').textContent = 'Please reload the page to try again.'; });
+api<Verb[]>(mode === 'errors' ? `${apiRoot}/common-errors` : `${apiRoot}/verbs`).then(data => { verbs = data; draw(); }).catch(() => { element('word').textContent = 'Unable to load'; element('meaning').textContent = 'Please reload the page to try again.'; });
