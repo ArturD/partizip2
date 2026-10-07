@@ -6,7 +6,7 @@ export async function articlesApi(request: Request, db: D1Database, learner: str
   const url = new URL(request.url);
   if (request.method === 'GET' && url.pathname === '/api/articles/nouns') return json(nouns.map(({ gender, ...noun }) => noun));
   if (request.method === 'GET' && url.pathname === '/api/articles/progress') {
-    const difficulty = url.searchParams.get('difficulty') || 'easy';
+    const difficulty = url.searchParams.get('difficulty') || 'hard';
     if (!['easy','hard'].includes(difficulty)) return json({ error: 'Invalid difficulty.' }, 400);
     const tier = url.searchParams.get('tier') || '';
     const question = url.searchParams.get('question') || '';

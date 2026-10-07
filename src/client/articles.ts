@@ -6,7 +6,7 @@ const labels = ['Gender · Nominativ', 'Accusative · Akkusativ', 'Dative · Dat
 let nouns: Noun[] = [], deck: Noun[] = [], current: Noun, step = 0, roundId = '', attemptId = '';
 let saved: Saved | undefined, pending: string | undefined, busy = false;
 const choices = element('choices'), feedback = element('article-feedback'), next = element<HTMLButtonElement>('article-next');
-let order = [...steps], roundDifficulty = 'easy';
+let order = [...steps], roundDifficulty = 'hard';
 const difficulty = element<HTMLSelectElement>('article-difficulty');
 const tier = element<HTMLSelectElement>('article-tier');
 function render() {
@@ -31,7 +31,7 @@ function start() {
   }
   const noun = deck.pop();
   if (!noun) { choices.replaceChildren(); element('article-word').textContent = 'No nouns in this tier yet'; element('article-prompt').textContent = ''; element('article-meaning').textContent = ''; element('article-step').textContent = ''; feedback.textContent = ''; element('article-note').textContent = ''; next.hidden = true; return; }
-  roundDifficulty = difficulty.value || 'easy';
+  roundDifficulty = difficulty.value || 'hard';
   order = [...steps];
   if (roundDifficulty === 'hard') for (let i = order.length - 1; i > 1; i--) {
     const j = 1 + Math.floor(Math.random() * i); [order[i], order[j]] = [order[j], order[i]];

@@ -57,13 +57,14 @@ test('article API enforces sequence, saves immutable retries and isolates learne
     const hardProgress = await (await get('progress?difficulty=hard')).json() as any;
     assert.equal(hardProgress.summary.reduce((n: number,r: any) => n+r.total,0),4);
     assert.equal(hardProgress.days.length,4);
+    assert.deepEqual(await (await get('progress')).json(),hardProgress);
     assert.equal((await get('progress?difficulty=invalid')).status,400);
-    const progress = await (await get('progress')).json() as any;
+    const progress = await (await get('progress?difficulty=easy')).json() as any;
     assert.equal(progress.summary.reduce((n: number,r: any) => n+r.total,0),4);
     assert.equal(progress.summary.reduce((n: number,r: any) => n+r.correct,0),3);
     assert.equal((await (await get('progress','two')).json() as any).summary.length,0);
     assert.equal((await (await get('progress?tier=common')).json() as any).summary.length,0);
-    assert.equal((await (await get('progress?question=gender')).json() as any).summary.length,1);
+    assert.equal((await (await get('progress?difficulty=easy&question=gender')).json() as any).summary.length,1);
     assert.equal(sqlite.prepare('SELECT COUNT(*) total FROM attempts').get()?.total,0);
   } finally { sqlite.close(); }
 });
