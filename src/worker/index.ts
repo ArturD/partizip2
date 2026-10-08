@@ -1,3 +1,4 @@
+import { formsApi } from '../features/forms/api';
 import { preterite, preteriteExplanation } from '../data/preterite';
 import { articlesApi } from '../features/articles/api';
 import { lessonQuery } from './trends';
@@ -10,6 +11,7 @@ const json = (data: unknown, status = 200) => Response.json(data, { status, head
 
 async function api(request: Request, env: Env, learner: string): Promise<Response> {
   const url = new URL(request.url);
+  if (url.pathname.startsWith('/api/forms/')) return formsApi(request, env.DB, learner);
   if (url.pathname.startsWith('/api/articles/')) return articlesApi(request, env.DB, learner);
   const isPreterite = url.pathname.startsWith('/api/preterite/');
   const endpoint = isPreterite ? url.pathname.replace('/api/preterite/', '/api/') : url.pathname;
